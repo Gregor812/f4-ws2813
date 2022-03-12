@@ -1,0 +1,2 @@
+#define F429_Display_VERSION_MAJOR @F429_Display_VERSION_MAJOR@
+#define F429_Display_VERSION_MINOR @F429_Display_VERSION_MINOR@

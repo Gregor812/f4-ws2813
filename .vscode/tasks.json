@@ -1,0 +1,117 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558 
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Rebuild",
+            "dependsOn": [
+                "Clean",
+                "Build"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Build",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "."
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "Configure"
+        },
+        {
+            "type": "shell",
+            "label": "Configure",
+            "linux": {
+                "command": "cmake",
+                "args": [
+                    "../",
+                    "-G",
+                    "\"Unix Makefiles\"",
+                    "-DCMAKE_TOOLCHAIN_FILE=../gcc-toolchain.cmake"
+                ]
+            },
+            "windows": {
+                "command": "${workspaceFolder}/build.bat"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build/"
+            },
+            "dependsOn": "CreateBuildFolder"
+        },
+        {
+            "type": "shell",
+            "label": "CreateBuildFolder",
+            "linux": {
+                "command": "mkdir",
+                "args": [
+                    "-p",
+                    "build"
+                ]
+            },
+            "windows": {
+                "command": "New-Item",
+                "args": [
+                    "-ItemType",
+                    "Directory",
+                    "-Force",
+                    "-Path",
+                    "build"
+                ]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Clean",
+            "windows": {
+                "command": "Remove-Item",
+                "args": [
+                    "-LiteralPath",
+                    "build",
+                    "-Force",
+                    "-Recurse"
+                ]
+            },
+            "linux": {
+                "command": "rm",
+                "args": [
+                    "-r",
+                    "build"
+                ]
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Load firmware",
+            "linux": 
+            {
+                "command": "openocd",
+                "args": [
+                    "-f",
+                    "board/stm32f429discovery.cfg",
+                    "-c",
+                    "\"program firmware.elf verify reset exit\""
+                ],
+            },
+            "windows": {
+                "command": "${workspaceFolder}/loadFirmware.bat"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/build/"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

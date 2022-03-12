@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "name": "embed",
+            "compilerPath": "arm-none-eabi-g++",
+            "intelliSenseMode": "gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "includePath": [
+                "${workspaceRoot}/CMSIS/Include",
+                "${workspaceRoot}/CMSIS/Device/Include",
+                "${workspaceRoot}/Core",
+                "${workspaceRoot}/Core/Systick",
+                "${workspaceRoot}/Application",
+                "${workspaceRoot}/Application/Ili9341",
+                "${workspaceRoot}/Display",
+                "${workspaceRoot}/Peripherals",
+                "${workspaceRoot}/Peripherals/Gpio",
+                "${workspaceRoot}/Peripherals/Random",
+                "${workspaceRoot}/Peripherals/Spi"
+            ],
+            "defines": [
+                "STM32F429xx"
+            ],
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}
