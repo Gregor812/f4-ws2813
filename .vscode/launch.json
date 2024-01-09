@@ -15,7 +15,8 @@
                 "board/stm32f429discovery.cfg"
             ],
             "svdFile": "${workspaceRoot}/STM32F429.svd",
-            "preLaunchTask": "Build"
+            "preLaunchTask": "Build",
+            "breakAfterReset": true
         }
     ]
 }

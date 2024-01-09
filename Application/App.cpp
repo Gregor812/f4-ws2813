@@ -3,6 +3,8 @@
 
 using namespace Peripherals;
 
+#define ZERO 34
+#define ONE 67
 #define OFF {34, 34, 34, 34, 34, 34, 34, 34}
 #define FULL {67, 67, 67, 67, 67, 67, 67, 67}
 #define HALF {34, 34, 34, 34, 67, 67, 67, 67}
@@ -30,11 +32,15 @@ namespace Application
 {
     static uint16_t LedColors[LED_NUMBER + PAUSE_LENGTH][COLORS_NUMBER][COLOR_DEPTH] = 
     {
-        { HALF, OFF, OFF },
-        { OFF, HALF, OFF },
-        { OFF, OFF, HALF },
-        { HALF, OFF, HALF },
-        { OFF, HALF, HALF },
+        { OFF, OFF, OFF },
+        { OFF, OFF, OFF },
+        { OFF, OFF, OFF },
+        { OFF, OFF, OFF },
+        { OFF, OFF, OFF },
+        // { OFF, HALF, OFF },
+        // { OFF, OFF, HALF },
+        // { HALF, OFF, HALF },
+        // { OFF, HALF, HALF },
         PAUSE,
     };
 
@@ -45,26 +51,8 @@ namespace Application
 
         while (true)
         {
-            volatile uint32_t countdown = 0xFFFFFF;
-            while (--countdown);
-
-            for (auto i = 0; i < LED_NUMBER; ++i)
-            {
-                for (auto j = 0; j < COLORS_NUMBER; ++j)
-                {
-                    for (auto k = 3; k < COLOR_DEPTH; ++k)
-                    {
-                        if (Random::GetUint32() % 2)
-                        {
-                            LedColors[i][j][k] = 67;
-                        }
-                        else
-                        {
-                            LedColors[i][j][k] = 34;
-                        }
-                    }
-                }
-            }
+            // RotateFiveColors();
+            ShowColorSequence();
         }
     }
 
@@ -153,5 +141,121 @@ namespace Application
             | (1 << DMA_SxFCR_FTH_Pos); // set FIFO threshold to 
         // enable stream
         DMA1_Stream7->CR |= DMA_SxCR_EN;
+    }
+
+    void App::RotateFiveColors(void)
+    {
+        volatile uint32_t countdown = 0x1FFFFF;
+        while (--countdown);
+
+        uint16_t lastLed[COLORS_NUMBER][COLOR_DEPTH];
+
+        for (auto i = 0; i < COLORS_NUMBER; ++i)
+        {
+            for (auto j = 0; j < COLOR_DEPTH; ++j)
+            {
+                lastLed[i][j] = LedColors[LED_NUMBER - 1][i][j];
+            }
+        }
+        
+
+        for (auto i = LED_NUMBER - 1; i > 0; --i)
+        {
+            for (auto j = 0; j < COLORS_NUMBER; ++j)
+            {
+                for (auto k = 3; k < COLOR_DEPTH; ++k)
+                {
+                    LedColors[i][j][k] = LedColors[i - 1][j][k];
+                    // if (Random::GetUint32() % 2)
+                    // {
+                    //     LedColors[i][j][k] = 67;
+                    // }
+                    // else
+                    // {
+                    //     LedColors[i][j][k] = 34;
+                    // }
+                }
+            }
+        }
+
+        for (auto i = 0; i < COLORS_NUMBER; ++i)
+        {
+            for (auto j = 0; j < COLOR_DEPTH; ++j)
+            {
+                LedColors[0][i][j] = lastLed[i][j];
+            }
+        }
+    }
+
+    void App::ShowColorSequence(void)
+    {
+        static uint8_t red = 0;
+        static uint8_t green = 0;
+        static uint8_t blue = 0;
+
+        uint16_t color[3][8];
+        FillColorChannelArray(color[0], green);
+        FillColorChannelArray(color[1], red);
+        FillColorChannelArray(color[2], blue);
+
+        if (red != 0x10 && green == 0x0 && blue == 0x0)
+        {
+            red += 2;
+        }
+        else if (red == 0x10 && green != 0x10 && blue == 0x0)
+        {
+            green += 2;
+        }
+        else if (red != 0x0 && green == 0x10 && blue == 0x0)
+        {
+            red -= 2;
+        }
+        else if (red == 0x0 && green == 0x10 && blue != 0x10)
+        {
+            blue += 2;
+        }
+        else if (red == 0x00 && green != 0x00 && blue == 0x10)
+        {
+            green -= 2;
+        }
+        else if (red != 0x10 && green == 0x00 && blue == 0x10)
+        {
+            red += 2;
+        }
+        else
+        {
+            blue -= 2;
+            red -= 2;
+        }
+
+        volatile uint32_t countdown = 0x10FFFF;
+        while (--countdown);        
+
+        for (auto i = LED_NUMBER - 1; i > 0; --i)
+        {
+            for (auto j = 0; j < COLORS_NUMBER; ++j)
+            {
+                for (auto k = 0; k < COLOR_DEPTH; ++k)
+                {
+                    LedColors[i][j][k] = LedColors[i - 1][j][k];
+                }
+            }
+        }
+
+        for (auto i = 0; i < COLORS_NUMBER; ++i)
+        {
+            for (auto j = 0; j < COLOR_DEPTH; ++j)
+            {
+                LedColors[0][i][j] = color[i][j];
+            }
+        }
+    }
+
+    void App::FillColorChannelArray(uint16_t(&channel)[8], uint8_t brightness)
+    {
+        for (auto i = 0; i < COLOR_DEPTH; ++i)
+        {
+            channel[COLOR_DEPTH - i - 1] = brightness & (1 << i) ? ONE : ZERO;
+        }
     }
 }
